@@ -18,7 +18,7 @@
 (def img_domain (get (System/getenv) "IMG_DOMAIN", ""))
 
 ; Read the csvs and load into the clucy memory index
-(defn reindex []
+(defn reindex [data_files]
   (clucy/search-and-delete index "*:*")
   (let [header [:cardlist :name :type_img :desc :rarity :img_url :img_file]]
     (doseq [data_file data_files]
@@ -27,7 +27,7 @@
           (clucy/add index
             (zipmap header row)))))))
 
-(reindex)
+(reindex data_files)
 
 ; Search handler
 (defn search [query limit]
@@ -52,7 +52,7 @@
   ; reindex handler
   (POST "/reindex" []
     {:status 200
-     :body (reindex)})
+     :body (reindex data_files)})
 )
 
 ; Main
