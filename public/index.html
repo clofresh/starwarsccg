@@ -4,24 +4,28 @@
   <title>Star Wars CCG</title>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
-  <script id="cards" type="text/template">
-    <ul>
-      <% for (var i = 0; i < cards.length; i++) { %>
-        <% var card = cards[i]; %>
-        <li>
-          <img src="<%= card.img_file %>" />
-          <%= card.name %>
-        </li>
-      <% } %>
-    </ul>
+  <script id="t-cards" type="text/template">
+    <% for (var i = 0; i < cards.length; i++) { %>
+      <% var card = cards[i]; %>
+      <img src="<%= card.img_file %>" alt="<%= card.name %>" />
+    <% } %>
   </script>
 </head>
 <body>
+  <form>
+    <input name="q" />
+  </form>
   <div id="main"></div>
   <script type="text/javascript">
+    (function( $ ) {
+      $.fn.template = function(vars) {
+        return $(_.template($(this).html(), vars));
+      };
+    })( jQuery );
+
     $(function() {
       $.get('/search', {q: "cardlist:Premiere"}).done(function(response) {
-        $("#main").append(_.template($("#cards").html(), response))
+        $("#t-cards").template(response).appendTo('#main')
       })
     })
   </script>
