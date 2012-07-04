@@ -1,0 +1,11 @@
+{
+    "name":    "starwarsccg",
+    "author":  "Carlo Cabanilla <carlo.cabanilla@gmail.com>",
+    "version": "0.1.0",
+    "dependencies": {
+        "spider":       "0.x.x",
+        "request":      "2.x.x",
+        "ya-csv":       "0.x.x",
+        "generic-pool": "1.x.x"
+    }
+}
