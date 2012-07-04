@@ -8,9 +8,11 @@
   (:require [clucy.core :as clucy])
   (:require [clj-json.core :as json]))
 
+; The in-memory lucene index to store the card data
 (def index (clucy/memory-index))
-(def data_dir (file "data"))
-(def data_files (filter #(.endsWith (.getName %) ".csv") (file-seq data_dir)))
+
+; A sequence of all the card csv files
+(def data_files (filter #(.endsWith (.getName %) ".csv") (file-seq (file "data"))))
 
 ; Read the csvs and load into the clucy memory index
 (defn reindex []
@@ -25,10 +27,10 @@
 (reindex)
 
 ; Search handler
-(defn search [query]
+(defn search [query limit]
   {:status 200
    :headers {"Content-Type" "application/json"}
-   :body (json/generate-string {:cards (clucy/search index query 10)})
+   :body (json/generate-string {:cards (clucy/search index query (Integer. limit))})
   })
 
 ; Routing
@@ -38,7 +40,7 @@
 
   ; search query handler
   (GET "/search*" {params :query-params}
-    (search (params "q")))
+    (search (params "q") (params "limit" 10)))
 
   ; reindex handler
   (POST "/reindex" []
