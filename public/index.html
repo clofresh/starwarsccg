@@ -65,9 +65,12 @@
           }
           return false
 
-        }).bind('search', function(evt, params) {
+        }).bind("search", function(evt, params) {
           // sync the given params with the form's params
           $(this).formVals(params)
+          // update the url without reloading the page
+          var url = window.location.pathname + "?" + $.param(params);
+          window.history.pushState(params, "search", url)
         })
         return this;
       }
@@ -108,7 +111,17 @@
 
     $(function() {
       $("#f-search").searcher("#main")
-      search('cardlist:CloudCity')
+
+      var pairs = location.search.replace('?', '').split('&'),
+          initialParams = _.reduce(pairs, function(result, v) {
+            var pair = v.split('=');
+            if (pair[0] && pair[1]) {
+              result[pair[0]] = pair[1];
+            }
+            return result
+          }, {})
+
+      search(initialParams)
     })
   </script>
 </body>
