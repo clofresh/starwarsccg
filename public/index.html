@@ -7,13 +7,21 @@
   <script id="t-cards" type="text/template">
     <% for (var i = 0; i < cards.length; i++) { %>
       <% var card = cards[i]; %>
-      <img src="<%= card.img_file %>" alt="<%= card.name %>" />
+      <img class="card" src="<%= card.img_file %>" alt="<%= card.name %>" />
     <% } %>
   </script>
+  <style>
+    img.card {
+      width:  200px;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
-  <form>
+  <form id="f-search" class="search">
     <input name="q" />
+    <input name="limit" value="10" />
+    <input type="submit" value="search" />
   </form>
   <div id="main"></div>
   <script type="text/javascript">
@@ -21,12 +29,54 @@
       $.fn.template = function(vars) {
         return $(_.template($(this).html(), vars));
       };
+
+      $.fn.formVals = function(vals) {
+        if (vals) {
+          // set
+          $(this).find('[name]').each(function() {
+            $(this).val(vals[$(this).attr('name')])
+          })
+          return vals
+        } else {
+          // get
+          return _.reduce($(this).find('[name]'), function(result, el) {
+            result[$(el).attr('name')] = $(el).val();
+            return result},
+          {})
+        }
+      }
     })( jQuery );
 
+    function search(params, callback) {
+      var defaultLimit = 10;
+
+      if (_.isString(params))    { params = {q: params} }
+      else if (_.isNull(params)) { params = $("#f-search").formVals() }
+      if (!params.limit)         { params.limit = defaultLimit }
+
+      $("form.search").trigger('search', params)
+
+      if (!callback) {
+        callback = function(response) {
+          $("#main").empty().append($("#t-cards").template(response))
+        }
+      }
+      return $.get('/search', params).done(callback)
+    }
+
     $(function() {
-      $.get('/search', {q: "cardlist:Premiere"}).done(function(response) {
-        $("#t-cards").template(response).appendTo('#main')
+      $("#f-search").submit(function() {
+        try {
+          search($(this).formVals()) 
+        } catch (e) {
+          console.log(e.stack)
+        }
+        return false
+      }).bind('search', function(evt, params) {
+        // sync the given params with the form's params
+        $("#f-search").formVals(params)
       })
+      search('cardlist:CloudCity')
     })
   </script>
 </body>
