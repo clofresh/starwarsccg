@@ -90,6 +90,8 @@ s.route(domain, "/cardlists/:cardlist.html", function(window, $) {
               downloaders.release()
             });
           });
+        } else {
+          downloaders.release()
         }
       })
 
