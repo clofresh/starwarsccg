@@ -70,7 +70,7 @@
           // sync the given params with the form's params
           $(this).formVals(params)
           // update the url without reloading the page
-          var url = window.location.pathname + "?" + $.param(params);
+          var url = decodeURIComponent(window.location.pathname + "?" + $.param(params));
           window.history.pushState(params, "search", url)
         })
         return this;
