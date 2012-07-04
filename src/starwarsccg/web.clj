@@ -14,6 +14,9 @@
 ; A sequence of all the card csv files
 (def data_files (filter #(.endsWith (.getName %) ".csv") (file-seq (file "data"))))
 
+; The domain of the image urls
+(def img_domain (get (System/getenv) "IMG_DOMAIN", ""))
+
 ; Read the csvs and load into the clucy memory index
 (defn reindex []
   (clucy/search-and-delete index "*:*")
@@ -28,9 +31,13 @@
 
 ; Search handler
 (defn search [query limit]
+  (defn concat_domain [row]
+    (update-in row [:img_file] #(str img_domain %)))
   {:status 200
    :headers {"Content-Type" "application/json"}
-   :body (json/generate-string {:cards (clucy/search index query (Integer. limit))})
+   :body (json/generate-string {:cards
+            (map concat_domain (clucy/search index query (Integer. limit)))
+         })
   })
 
 ; Routing
