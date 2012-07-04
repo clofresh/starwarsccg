@@ -117,7 +117,7 @@
           initialParams = _.reduce(pairs, function(result, v) {
             var pair = v.split('=');
             if (pair[0] && pair[1]) {
-              result[pair[0]] = pair[1];
+              result[pair[0]] = pair[1].replace('+', ' ');
             }
             return result
           }, {})
