@@ -27,10 +27,12 @@
   <script type="text/javascript">
     (function( $ ) {
       $.fn.template = function(vars) {
+        // Helper function for using underscore templates with jquery
         return $(_.template($(this).html(), vars));
       };
 
       $.fn.formVals = function(vals) {
+        // Form value setter/getter
         if (vals) {
           // set
           $(this).find('[name]').each(function() {
@@ -45,37 +47,67 @@
           {})
         }
       }
+
+      $.fn.searcher = function(target) {
+        // Initialize this element as a searcher, where target is the selector
+        // for where to write the search results to
+        $(this).submit(function() {
+          // If this element is submitted as a form, intercept the submission
+          // and make a search request instead
+          try {
+            search($(this).formVals(), {
+              target: target
+            })
+          } catch (e) {
+            // Catch any errors so that the form won't make a page request
+            // if any errors occur
+            console.log(e.stack)
+          }
+          return false
+
+        }).bind('search', function(evt, params) {
+          // sync the given params with the form's params
+          $(this).formVals(params)
+        })
+        return this;
+      }
+
     })( jQuery );
 
-    function search(params, callback) {
-      var defaultLimit = 10;
 
-      if (_.isString(params))    { params = {q: params} }
-      else if (_.isNull(params)) { params = $("#f-search").formVals() }
-      if (!params.limit)         { params.limit = defaultLimit }
-
-      $("form.search").trigger('search', params)
-
-      if (!callback) {
-        callback = function(response) {
-          $("#main").empty().append($("#t-cards").template(response))
+    // Default values for searches
+    var searchDefaults = {
+      params: {
+        q: "*:*",
+        limit: 10
+      },
+      options: {
+        target: "#main",
+        template: "#t-cards",
+        callback: function(response) {
+          $(searchDefaults.options.target).empty()
+            .append($(searchDefaults.options.template).template(response))
         }
       }
-      return $.get('/search', params).done(callback)
+    };
+
+    function search(params, options) {
+      // The first argument can either by an object or a string
+      if (_.isString(params)) { params = {q: params} }
+
+      // Get the default values for each argument
+      var params  = _.extend(searchDefaults.params, params),
+          options = _.extend(searchDefaults.options, options)
+
+      // Notify interested parties that a search has occured
+      $("form.search").trigger("search", params)
+
+      // Fire off the ajax request for the data
+      return $.get('/search', params).done(options.callback)
     }
 
     $(function() {
-      $("#f-search").submit(function() {
-        try {
-          search($(this).formVals()) 
-        } catch (e) {
-          console.log(e.stack)
-        }
-        return false
-      }).bind('search', function(evt, params) {
-        // sync the given params with the form's params
-        $("#f-search").formVals(params)
-      })
+      $("#f-search").searcher("#main")
       search('cardlist:CloudCity')
     })
   </script>
